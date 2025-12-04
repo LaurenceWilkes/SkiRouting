@@ -1,0 +1,25 @@
+[out:json][timeout:60];
+
+(
+// Les Contamines
+way["aerialway"]["aerialway"!="goods"](45.77,6.64,45.82,6.73);
+way["piste:type"]["piste:type"!="nordic"]["piste:type"!="hike"](45.77,6.64,45.82,6.73);
+
+// Les Portes du Mont-Blanc
+way["aerialway"]["aerialway"!="goods"](45.86,6.52,45.90,6.63);
+way["piste:type"]["piste:type"!="nordic"]["piste:type"!="hike"](45.86,6.52,45.90,6.63);
+
+// La Giettaz
+way["aerialway"]["aerialway"!="goods"](45.86,6.49,45.87,6.50);
+way["piste:type"]["piste:type"!="nordic"]["piste:type"!="hike"](45.86,6.49,45.87,6.50);
+
+// Saint-Gervais / Saint-Nicolas
+way["aerialway"]["aerialway"!="goods"](45.82,6.632,45.90,6.72);
+way["piste:type"]["piste:type"!="nordic"]["piste:type"!="hike"](45.82,6.632,45.90,6.72);
+
+// Megeve
+way["aerialway"]["aerialway"!="goods"](45.8,6.6,45.86,6.655);
+way["piste:type"]["piste:type"!="nordic"]["piste:type"!="hike"](45.8,6.6,45.86,6.655);
+)->.evasion;
+
+.evasion out geom;
