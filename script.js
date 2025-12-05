@@ -12,10 +12,11 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
-// --- Layer groups ----------------------------------------------------
-
 var liftLayer = L.layerGroup().addTo(map);
 var pisteLayer = L.layerGroup().addTo(map);
+
+// Currently highlighted
+let currentlyHighlighted = null;
 
 // Legend
 var legend = L.control({ position: "bottomright" });
@@ -134,11 +135,10 @@ function renderOverpassData(data, elevationMap) {
       var name = tags.name || "(unnamed lift)";
       var liftType = tags.aerialway;
 
-      var poly = L.polyline(coords, {
-	color: "#555555",
-	weight: 3,
-	dashArray: "5, 5",
-      }).addTo(liftLayer);
+      var liftStyle = { color: "#555555", weight: 3, dashArray: "5, 5" };
+
+      var poly = L.polyline(coords, liftStyle).addTo(liftLayer);
+      poly._originalStyle = liftStyle;
 
       poly.bindPopup(
 	"<strong>Lift</strong><br>" +
@@ -170,11 +170,11 @@ function renderOverpassData(data, elevationMap) {
       var name = tags.name || "(unnamed piste)";
       var colour = colourForDifficulty(diff);
 
-      var poly = L.polyline(coords, {
-	color: colour,
-	weight: 3,
-      }).addTo(pisteLayer);
+      var pisteStyle = { color: colour, weight: 3 };
+      var poly = L.polyline(coords, pisteStyle).addTo(pisteLayer);
+      poly._originalStyle = pisteStyle;
 
+      // Info popup
       poly.bindPopup(
 	"<strong>Piste</strong><br>" +
 	  "Name: " +
@@ -188,6 +188,7 @@ function renderOverpassData(data, elevationMap) {
           elevationText
       );
 
+      // Include arrows
       const arrowDec = L.polylineDecorator(poly, {
         patterns: [
           {
@@ -212,6 +213,29 @@ function renderOverpassData(data, elevationMap) {
         }
       });
     }
+    poly.on("click", () => {
+      // Reset previously highlighted line
+      if (currentlyHighlighted && currentlyHighlighted !== poly) {
+        currentlyHighlighted.setStyle(currentlyHighlighted._originalStyle);
+      }
+
+      // Apply highlight
+      poly.setStyle({
+        color: colour,      
+//        color: "#FFD700",
+        weight: 6,        
+        opacity: 1
+      });
+
+      // Store this as highlighted
+      currentlyHighlighted = poly;
+    });
+    poly.on("popupclose", () => {
+      if (currentlyHighlighted === poly) {
+        poly.setStyle(poly._originalStyle);
+        currentlyHighlighted = null;
+      }
+    });
   });
 }
 
