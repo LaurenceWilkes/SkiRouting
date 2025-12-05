@@ -1,6 +1,6 @@
 // --- Map setup -------------------------------------------------------
 
-// Rough centre of Evasion Mont-Blanc
+// Rough centre of Evasion resorts 
 var mapCenter = [45.83626, 6.64928];
 
 var map = L.map("map").setView(mapCenter, 12);
@@ -8,8 +8,7 @@ var map = L.map("map").setView(mapCenter, 12);
 // Base map 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 18,
-  attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
 
 var liftLayer = L.layerGroup().addTo(map);
@@ -86,7 +85,7 @@ function colourForDifficulty(diff) {
 
 async function loadData() {
   var statusText = document.getElementById("statusText");
-  statusText.textContent = "Loading from Overpass…";
+  statusText.textContent = "Loading from Overpass...";
 
   liftLayer.clearLayers();
   pisteLayer.clearLayers();
@@ -106,7 +105,7 @@ async function loadData() {
     }
 
     var data = await response.json();
-    statusText.textContent = "Rendering…";
+    statusText.textContent = "Rendering...";
 
     var elevationMap = await produceElevationMap(data);
     renderOverpassData(data, elevationMap); // This is possibly a temporary solution
@@ -201,7 +200,8 @@ function renderOverpassData(data, elevationMap) {
           }
         ]
       });
-      map.on("zoomend", () => {
+      // Only apply arrows when zoomed in
+      map.on("zoomend", () => { 
         if (map.getZoom() >= 13) {
           if (!map.hasLayer(arrowDec)) {
             arrowDec.addTo(map);
@@ -214,20 +214,18 @@ function renderOverpassData(data, elevationMap) {
       });
     }
     poly.on("click", () => {
-      // Reset previously highlighted line
+      // Reset previously highlighted 
       if (currentlyHighlighted && currentlyHighlighted !== poly) {
         currentlyHighlighted.setStyle(currentlyHighlighted._originalStyle);
       }
 
-      // Apply highlight
+      // Highlight
       poly.setStyle({
         color: colour,      
-//        color: "#FFD700",
         weight: 6,        
         opacity: 1
       });
 
-      // Store this as highlighted
       currentlyHighlighted = poly;
     });
     poly.on("popupclose", () => {
@@ -242,48 +240,55 @@ function renderOverpassData(data, elevationMap) {
 // --- Elevation data -----------------------
 
 async function fetchElevations(coords) {
-  const ELEVATION_URL = "https://elevation.racemap.com/api";
+  const ELEVATION_URL = "https://api.open-elevation.com/api/v1/lookup";
+  
   // coords = [ [lat, lon], [lat, lon], ... ]
+
+  const body = {
+    locations: coords.map(c => ({
+      latitude: c[0],
+      longitude: c[1]
+    }))
+  };
+
   const response = await fetch(ELEVATION_URL, {
     method: "POST",
     headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(coords)
+    body: JSON.stringify(body)
   });
 
   if (!response.ok) {
     throw new Error("Elevation server error: " + response.status);
   }
 
-  return await response.json(); // returns [ele1, ele2, ...]
+  const json = await response.json();
+
+  // returns [ele1, ele2, ...]
+  return json.results.map(r => r.elevation);
 }
 
 async function produceElevationMap(data) {  
-  // Extract start & end points
   const elevationRequest = [];
-  const pisteRefs = [];  // to remember which index belongs to which piste
+  const pisteRefs = [];  
 
   data.elements.forEach(el => {
     if (el.type !== "way") return;
     const tags = el.tags || {};
-    if (!tags["piste:type"]) return; // we only care about pistes
+    if (!tags["piste:type"]) return; // only pistes for now
 
     const coords = el.geometry;
     const start = coords[0];
     const end   = coords[coords.length - 1];
 
-    // Save for request
     elevationRequest.push([start.lat, start.lon]);
     elevationRequest.push([end.lat,   end.lon]);
 
-    // Save mapping back to this piste
     pisteRefs.push({ id: el.id, indexStart: elevationRequest.length - 2, indexEnd: elevationRequest.length - 1 });
   });
 
-  // Send request in one batch
   const elevations = await fetchElevations(elevationRequest);
 
-  // Attach elevations back to the data
-  const elevationMap = {}; // id → {startEle, endEle}
+  const elevationMap = {}; 
   pisteRefs.forEach(ref => {
     elevationMap[ref.id] = {
       startEle: elevations[ref.indexStart],
