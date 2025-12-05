@@ -153,14 +153,18 @@ function renderOverpassData(data, elevationMap) {
       const elev = elevationMap[el.id];
       let elevationText = "";
       if (elev) {
+        if (elev.startEle < elev.endEle) {
+          coords = coords.slice().reverse();
+          [elev.startEle, elev.endEle] = [elev.endEle, elev.startEle];
+        }
         elevationText = `
           <br><b>Start elevation:</b> ${Math.round(elev.startEle)} m
           <br><b>End elevation:</b> ${Math.round(elev.endEle)} m
-          <br><b>Vertical drop:</b> ${Math.round(elev.startEle - elev.endEle)} m
+          <br><b>Vertical difference:</b> ${Math.round(elev.startEle - elev.endEle)} m
         `;
       }
 
-      // Piste (non-nordic, since we filtered in the query)
+      // Piste (non-nordic)
       var pisteType = tags["piste:type"];
       var diff = tags["piste:difficulty"] || "unknown";
       var name = tags.name || "(unnamed piste)";
@@ -183,6 +187,30 @@ function renderOverpassData(data, elevationMap) {
 	  diff +
           elevationText
       );
+
+      const arrowDec = L.polylineDecorator(poly, {
+        patterns: [
+          {
+            offset: '50%',
+            repeat: 0,
+            symbol: L.Symbol.arrowHead({
+              pixelSize: 10,
+              pathOptions: { color: colour, weight: 1, fillOpacity: 1 }
+            })
+          }
+        ]
+      });
+      map.on("zoomend", () => {
+        if (map.getZoom() >= 13) {
+          if (!map.hasLayer(arrowDec)) {
+            arrowDec.addTo(map);
+          }
+        } else {
+          if (map.hasLayer(arrowDec)) {
+            map.removeLayer(arrowDec);
+          }
+        }
+      });
     }
   });
 }
