@@ -294,7 +294,6 @@ async function produceElevationMap(data) {
   return elevationMap;
 }
 
-
 // --- Controls --------------------------------------------------------
 
 document.getElementById("reloadButton").addEventListener("click", function () {
