@@ -23,5 +23,8 @@ The elevation data is used to infer piste directions and to display detailed hei
     - However, the external APIs should most likely not be relied on too heavily. For just a few resorts, it would make sense to store the data in the repo and update on a daily/weekly basis. 
 - *Include more resorts* 
     - This should most likely be done at least partially on a case-by-case basis as producing an accurate graph for each resort may be difficult to automate.
+- *Optimise for mobile use*
+    - The app will most likely be used on mobile, ways should be larger and have a larger clickable area.
+    - Include a location dot and the ability to centre in on the users location.
 
 
