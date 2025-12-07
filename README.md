@@ -12,7 +12,7 @@ The elevation data is used to infer piste directions and to display detailed hei
 
 ---
 
-# To do
+## To do
 - *Actually introduce routing* 
     - Produce a graph representation of the resort bearing in mind that the nodes included in the ski piste ways are not necessarily complete/connected.
     - Choose an appropriate search algorithm and decide what data should be stored.
@@ -20,7 +20,7 @@ The elevation data is used to infer piste directions and to display detailed hei
     - UI and controls. I.e. avoid black runs.
 - *Update how the data is stored/sourced* 
     - Currently, only the bounding boxes of the resorts are stored locally. This was done so that implementing other resorts shouldn't be too difficult. 
-    - However, the external APIs should most likely not be relied on. For just a few resorts, it would make sense to store the data in the repo and update on a daily/weekly basis. 
+    - However, the external APIs should most likely not be relied on too heavily. For just a few resorts, it would make sense to store the data in the repo and update on a daily/weekly basis. 
 - *Include more resorts* 
     - This should most likely be done at least partially on a case-by-case basis as producing an accurate graph for each resort may be difficult to automate.
 
