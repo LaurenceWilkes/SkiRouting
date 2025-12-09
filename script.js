@@ -97,6 +97,8 @@ async function loadData() {
 
   displayWays(data, elevationMap); // This is possibly a temporary solution
 
+//  var graph = buildGraph(data, elevationMap);
+
   statusText.textContent = "Loaded " + data.elements.length + " ways.";
 }
 
@@ -132,17 +134,19 @@ function displayWays(data, elevationMap) {
       );
     } else if (tags["piste:type"]) {
       // Piste
-      const elev = elevationMap[el.id];
+      let startEle = elevationMap[el.nodes[0]];
+      let endEle = elevationMap[el.nodes[el.nodes.length - 1]];
       let elevationText = "";
-      if (elev) {
-        if (elev.startEle < elev.endEle) {
+      if (startEle) {
+        if (startEle < endEle) {
           coords = coords.slice().reverse();
-          [elev.startEle, elev.endEle] = [elev.endEle, elev.startEle];
+          el.nodes = el.nodes.slice().reverse();
+          [startEle, endEle] = [endEle, startEle];
         }
         elevationText = `
-          <br><b>Start elevation:</b> ${Math.round(elev.startEle)} m
-          <br><b>End elevation:</b> ${Math.round(elev.endEle)} m
-          <br><b>Vertical difference:</b> ${Math.round(elev.startEle - elev.endEle)} m
+          <br><b>Start elevation:</b> ${Math.round(startEle)} m
+          <br><b>End elevation:</b> ${Math.round(endEle)} m
+          <br><b>Vertical difference:</b> ${Math.round(startEle - endEle)} m
         `;
       }
 
@@ -218,7 +222,6 @@ function displayWays(data, elevationMap) {
     });
   });
 }
-
 
 // --- Controls --------------------------------------------------------
 

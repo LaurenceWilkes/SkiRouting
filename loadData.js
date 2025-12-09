@@ -58,7 +58,7 @@ async function fetchElevations(coords) {
 
 export async function produceElevationMap(data) {  
   const elevationRequest = [];
-  const pisteRefs = [];  
+  const nodeRefs = [];  
 
   data.elements.forEach(el => {
     if (el.type !== "way") return;
@@ -68,22 +68,21 @@ export async function produceElevationMap(data) {
     const coords = el.geometry;
     const start = coords[0];
     const end   = coords[coords.length - 1];
+    const startid = el.nodes[0];
+    const endid = el.nodes[el.nodes.length - 1];
 
     elevationRequest.push([start.lat, start.lon]);
     elevationRequest.push([end.lat,   end.lon]);
-
-    pisteRefs.push({ id: el.id, indexStart: elevationRequest.length - 2, indexEnd: elevationRequest.length - 1 });
+    nodeRefs.push(startid);
+    nodeRefs.push(endid);
   });
 
   const elevations = await fetchElevations(elevationRequest);
 
   const elevationMap = {}; 
-  pisteRefs.forEach(ref => {
-    elevationMap[ref.id] = {
-      startEle: elevations[ref.indexStart],
-      endEle:   elevations[ref.indexEnd]
-    };
-  });
+  for (let i = 0; i < nodeRefs.length; i++) {
+    elevationMap[nodeRefs[i]] = elevations[i];
+  }
 
   return elevationMap;
 }
