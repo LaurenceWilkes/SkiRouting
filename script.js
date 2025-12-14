@@ -1,4 +1,5 @@
 import {fetchOverpass, produceElevationMap} from "./loadData.js";
+import {buildGraph} from "./graph2.js";
 
 // --- Map setup -------------------------------------------------------
 
@@ -97,7 +98,7 @@ async function loadData() {
 
   displayWays(data, elevationMap); // This is possibly a temporary solution
 
-//  var graph = buildGraph(data, elevationMap);
+  var graph = buildGraph(data, elevationMap);
 
   statusText.textContent = "Loaded " + data.elements.length + " ways.";
 }
