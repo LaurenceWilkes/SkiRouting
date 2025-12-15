@@ -1,3 +1,4 @@
+import {PriorityQueue} from "./priorityqueue.js";
 // graph2.js - simplified version to get it working
 
 // Convert to metres relative to origin
@@ -32,7 +33,7 @@ function createNode(id, lat, lon, ele, meta = {}) {
 
 function addEdge(a, b, w, meta = {}) {
   if (!(a in graph.edges)) {graph.edges[a] = [];}
-  graph.edges[a].push({ b: b, w: w, ...meta })
+  graph.edges[a].push({ to: b, weight: w, ...meta })
 }
 
 function nearbyVerts(epNode, radius = 20) {
@@ -144,4 +145,44 @@ export function buildGraph(data, elevationMap) {
     Object.values(graph.edges).reduce((s, e) => s + e.length, 0)
   );
   return graph;
+}
+
+// --- Initial routing  ----------------------
+// Dijkstra for now, A* with great-circle distance (likely?) not beneficial as
+// the paths are often zig zag shapes.
+export function route(startVert, endVert) {
+  const dist = {};
+  const prev = {};
+
+  for (let id in graph.verts) dist[id] = Infinity;
+  dist[startVert] = 0;
+
+  const pq = new PriorityQueue((a, b) => a[0] > b[0]);
+  pq.push([0, startVert]);
+
+  while (!pq.isEmpty()) {
+    const [d, u] = pq.pop();
+
+    if (d > dist[u]) continue;
+    if (u === endVert) break;
+
+    (graph.edges[u] || []).forEach(e => {
+      const alt = d + e.weight;
+      if (alt < dist[e.to]) {
+        dist[e.to] = alt;
+        prev[e.to] = u;
+        pq.push([alt, e.to]);
+      }
+    });
+  }
+
+  if (dist[endVert] === Infinity) {return null;}
+
+  const path = [];
+  let cur = endVert;
+  while (cur !== undefined) {
+    path.push(cur);
+    cur = prev[cur];
+  }
+  return path.reverse();
 }

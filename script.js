@@ -96,7 +96,7 @@ async function loadData() {
   var data = await fetchOverpass();
   var elevationMap = await produceElevationMap(data); // fetch elevations and form into elevation map
 
-  displayWays(data, elevationMap); // This is possibly a temporary solution
+  displayWays(data, elevationMap); // This also corrects the direction of the pistes 
 
   var graph = buildGraph(data, elevationMap);
 
