@@ -1,6 +1,6 @@
 # Ski routing demo
 
-[Link to demo](https://laurencewilkes.github.io/SkiRouting/)
+[Link to demo](https://laurencewilkes.github.io/SkiRouting/) -- Still requires testing and improvement to routing
 
 This project is a small scale demo of a routing application for ski resorts.
 Currently, the demo focusses on the Evasion Mont Blanc ski area which is a group of 6 partially interconnected resorts in the French alps.
@@ -9,6 +9,7 @@ The aim is to visualise pistes and ski lifts on an interactive map in a manner i
 The current prototype uses [Leaflet](https://leafletjs.com/) for the map display, with [OpenStreetMap](https://www.openstreetmap.org/copyright) tiles. 
 A query is made to [Overpass](https://overpass-api.de/) for the piste and ski lift ways, and elevation data is sourced from [open-elevation](https://open-elevation.com/).
 The elevation data is used to infer piste directions and to display detailed height information.
+
 
 ---
 
