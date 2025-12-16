@@ -135,8 +135,8 @@ export function buildGraph(data, elevationMap) {
       const nearest = nearbyVerts(epNode, 5);
       if (!nearest) return;
       for (let i = 0; i < nearest.length; i++) {
-        addEdge(epNode, nearest[i], 0, { kind: "connector" });
-        addEdge(nearest[i], epNode, 0, { kind: "connector" });
+        addEdge(epNode, nearest[i], 1, { kind: "connector" }); // 1 meter for now
+        addEdge(nearest[i], epNode, 1, { kind: "connector" }); // 1 meter for now
       }
     });
   });
@@ -156,8 +156,8 @@ export function buildGraph(data, elevationMap) {
     }
     for (let i = 0; i < platVerts.length - 1; i++) {
       for (let j = i + 1; j < platVerts.length; j++) {
-        addEdge(platVerts[i], platVerts[j], 0, { kind: "connector" });
-        addEdge(platVerts[j], platVerts[i], 0, { kind: "connector" });
+        addEdge(platVerts[i], platVerts[j], 1, { kind: "connector" }); // 1 meter for now
+        addEdge(platVerts[j], platVerts[i], 1, { kind: "connector" }); // 1 meter for now
       }
     }
   });
