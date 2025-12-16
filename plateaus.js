@@ -157,6 +157,12 @@ export const plateaus = [
     bottomright: [45.853319, 6.671861],
     upperleft: [45.853644, 6.672564],
   },
+  {
+    id: "saddle_break",
+    name: "Broken Saddle",
+    bottomright: [45.843988, 6.680433],
+    upperleft: [45.844594, 6.681640],
+  },
 
 // STILL TO DO: contamines and other side of megeve
 ];
