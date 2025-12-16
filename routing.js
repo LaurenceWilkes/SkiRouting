@@ -1,5 +1,5 @@
 // routing.js
-import {route, graph} from "./graph2.js"; // eventually, graph.js
+import {route, graph, distanceBetween} from "./graph2.js"; // eventually, graph.js
 
 let state = "idle"; // idle / selectStart / selectEnd / shown
 let startNode = null;
@@ -50,10 +50,10 @@ export function clearRoute() {
 
 // ---- click handling -----------------------------------------
 
-export function handleFeatureClick(osmElement, wayData) {
+export function handleFeatureClick(el) {
   if (state === "idle") return;
 
-  const node = pickNodeFromElement(osmElement);
+  const node = pickNodeFromElement(el);
   if (!node) return;
 
   if (state === "selectStart") {
@@ -73,7 +73,7 @@ export function handleFeatureClick(osmElement, wayData) {
       { radius: 6, color: "red", fillOpacity: 1 }
     ).addTo(routeGroup);
 
-    computeRoute(wayData);
+    computeRoute();
     state = "shown";
     setStatus("Route shown");
   }
@@ -82,51 +82,39 @@ export function handleFeatureClick(osmElement, wayData) {
 // ---- internals ----------------------------------------------
 
 function pickNodeFromElement(el) {
-  // Prefer endpoints
-  if (el.nodes && el.nodes.length > 0) {
-    const a = el.nodes[0];
-    const b = el.nodes[el.nodes.length - 1];
-    if (graph.verts[a]) return a;
-    if (graph.verts[b]) return b;
+  var bestDist = Infinity;
+  var bestVert = null;
+  for (var v in graph.verts) {
+    const a = graph.verts[v];
+    const distance = distanceBetween(a.lat, a.lon, el.latlng.lat, el.latlng.lng);
+    if (distance < bestDist) {
+      bestDist = distance;
+      bestVert = v;
+    }
   }
-  return null;
+  return bestVert;
 }
 
-function buildRouteGeometry(pathEdges, wayData) { // way data has to be brought in from script
+function buildRouteGeometry(pathEdges) {
   const coords = [];
-
-  pathEdges.forEach(edge => {
-    const element = wayData[edge.wayId];
-
-    if (!element) {
-      return;
+  pathEdges.forEach(e => {
+    if (e.geometry) {
+      e.geometry.forEach(pt => {
+        coords.push([pt.lat, pt.lon]);
+      });
     }
-
-    let onFlag = false;
-    for (let i = 0; i < element.nodes.length; i++) {
-      const pt = element.geometry[i];
-      if (element.nodes[i] == edge.from) {
-        onFlag = true;
-        if (coords.length === 0) {coords.push([pt.lat, pt.lon]);}
-        continue;
-      }
-      if (onFlag) {coords.push([pt.lat, pt.lon]);}
-      if (element.nodes[i] == edge.to) {onFlag = false;}
-    }
-
   });
-
   return coords;
 }
 
-function computeRoute(wayData) {
+function computeRoute() {
   const pathEdges = route(startNode, endNode);
   if (!pathEdges) {
     setStatus("No route found");
     return;
   }
 
-  const coords = buildRouteGeometry(pathEdges, wayData);
+  const coords = buildRouteGeometry(pathEdges);
 
   routeLayer = L.polyline(coords, {
     color: "#FFD700",

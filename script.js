@@ -210,15 +210,7 @@ function displayWays(data, elevationMap) {
       });
     }
 
-    // wayData provides the details of each way for routing.js to plot the partial routes. 
-    // (possibly a temporary solution)
-    var wayData = {};  
-    data.elements.forEach(el => {
-      wayData[el.id] = el;
-    });
-
     poly.on("click", () => {
-      handleFeatureClick(el, wayData);
 
       // Reset previously highlighted 
       if (currentlyHighlighted && currentlyHighlighted !== poly) {
@@ -253,21 +245,23 @@ document.getElementById("reloadButton").addEventListener("click", function () {
 // Initial load
 loadData();
 
-// // temp
-// map.on("click", function (e) {
-//   const lat = e.latlng.lat.toFixed(6);
-//   const lon = e.latlng.lng.toFixed(6);
-// 
-//   L.popup()
-//     .setLatLng(e.latlng)
-//     .setContent(`<b>Lat:</b> ${lat}<br><b>Lon:</b> ${lon}`)
-//     .openOn(map);
-// 
-//   L.circle([lat, lon], {
-//     radius: 15,
-//     color: "orange",
-//     fill: false
-//   }).addTo(map);
-// 
-//   console.log(`Clicked at: ${lat}, ${lon}`);
-// });
+// temp
+map.on("click", function (e) {
+  handleFeatureClick(e);
+
+//  const lat = e.latlng.lat.toFixed(6);
+//  const lon = e.latlng.lng.toFixed(6);
+//
+//  L.popup()
+//    .setLatLng(e.latlng)
+//    .setContent(`<b>Lat:</b> ${lat}<br><b>Lon:</b> ${lon}`)
+//    .openOn(map);
+//
+//  L.circle([lat, lon], {
+//    radius: 15,
+//    color: "orange",
+//    fill: false
+//  }).addTo(map);
+//
+//  console.log(`Clicked at: ${lat}, ${lon}`);
+});

@@ -3,7 +3,7 @@ import {PriorityQueue} from "./priorityqueue.js";
 import {plateaus} from "./plateaus.js";
 
 // Find great-circle distance
-function distanceBetween(alat, alon, blat, blon) {
+export function distanceBetween(alat, alon, blat, blon) {
   const R = 6282966; // assuming earth is a sphere (This value is chosen to work in the alps - need a better long term solution)
   const toRad = x => x * Math.PI / 180;
   const Dlat = toRad(blat - alat);
@@ -13,6 +13,15 @@ function distanceBetween(alat, alon, blat, blon) {
   return R * (2 * Math.atan2(Math.sqrt(havt), Math.sqrt(1 - havt)));
 }
 
+function polylineLength(coords) {
+  let len = 0;
+  for (let i = 0; i < coords.length - 1; i++) {
+    const a = coords[i];
+    const b = coords[i + 1];
+    len += distanceBetween(a.lat, a.lon, b.lat, b.lon);
+  }
+  return len;
+}
 
 // --- Graph tools ------------------------------
 
@@ -114,11 +123,26 @@ export function buildGraph(data, elevationMap) {
       const A = graph.verts[verts[i]];
       const B = graph.verts[verts[i + 1]];
       if (!A || !B) continue;
-      const w = distanceBetween(A.lat, A.lon, B.lat, B.lon);
-      addEdge(verts[i], verts[i + 1], w, {
+
+      const from = verts[i];
+      const to = verts[i + 1];
+
+      const idxA = el.nodes.indexOf(from);
+      const idxB = el.nodes.indexOf(to);
+      if (idxA === -1 || idxB === -1) return;
+
+      const segGeom = el.geometry.slice(
+        Math.min(idxA, idxB),
+        Math.max(idxA, idxB) + 1
+      );
+
+      const w = polylineLength(segGeom);
+
+      addEdge(from, to, w, {
         wayId: id,
         kind: tags.aerialway ? "lift" : "piste",
-        difficulty: tags["piste:difficulty"] || null
+        difficulty: tags["piste:difficulty"] || null,
+        geometry: segGeom
       });
     }
   });
@@ -134,9 +158,13 @@ export function buildGraph(data, elevationMap) {
     endpoints.forEach(epNode => {
       const nearest = nearbyVerts(epNode, 5);
       if (!nearest) return;
+      const idxA = el.nodes.indexOf(epNode);
+      const coordA = el.geometry[idxA];
       for (let i = 0; i < nearest.length; i++) {
-        addEdge(epNode, nearest[i], 1, { kind: "connector" }); // 1 meter for now
-        addEdge(nearest[i], epNode, 1, { kind: "connector" }); // 1 meter for now
+        const idxB = el.nodes.indexOf(nearest[i]);
+        const coordB = el.geometry[idxB];
+        addEdge(epNode, nearest[i], 0, { kind: "connector", geometry: [coordA, coordB] }); 
+        addEdge(nearest[i], epNode, 0, { kind: "connector", geometry: [coordB, coordA] }); 
       }
     });
   });
@@ -155,9 +183,13 @@ export function buildGraph(data, elevationMap) {
       ) {platVerts.push(v);}
     }
     for (let i = 0; i < platVerts.length - 1; i++) {
+      const A = graph.verts[platVerts[i]];
+      const coordA = { lat: A.lat, lon: A.lon };
       for (let j = i + 1; j < platVerts.length; j++) {
-        addEdge(platVerts[i], platVerts[j], 1, { kind: "connector" }); // 1 meter for now
-        addEdge(platVerts[j], platVerts[i], 1, { kind: "connector" }); // 1 meter for now
+        const B = graph.verts[platVerts[j]];
+        const coordB = { lat: B.lat, lon: B.lon };
+        addEdge(platVerts[i], platVerts[j], 0, { kind: "connector", geometry: [coordA, coordB] }); 
+        addEdge(platVerts[j], platVerts[i], 0, { kind: "connector", geometry: [coordB, coordA] }); 
       }
     }
   });
