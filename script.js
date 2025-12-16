@@ -1,5 +1,6 @@
 import {fetchOverpass, produceElevationMap} from "./loadData.js";
 import {buildGraph} from "./graph2.js";
+import {initRouting, startRouting, clearRoute, handleFeatureClick} from "./routing.js";
 
 // --- Map setup -------------------------------------------------------
 
@@ -14,8 +15,13 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
 
+// Way layers
 var liftLayer = L.layerGroup().addTo(map);
 var pisteLayer = L.layerGroup().addTo(map);
+
+// Route layer
+var routeLayer = L.layerGroup().addTo(map);
+initRouting(map, routeLayer);
 
 // Currently highlighted
 let currentlyHighlighted = null;
@@ -97,10 +103,13 @@ async function loadData() {
   var elevationMap = await produceElevationMap(data); // fetch elevations and form into elevation map
 
   displayWays(data, elevationMap); // This also corrects the direction of the pistes 
+  statusText.textContent = "Loaded " + data.elements.length + " ways.";
+
 
   var graph = buildGraph(data, elevationMap);
+  document.getElementById("routeBtn").addEventListener("click", startRouting);
+  document.getElementById("clearRouteBtn").addEventListener("click", clearRoute);
 
-  statusText.textContent = "Loaded " + data.elements.length + " ways.";
 }
 
 // --- Display pistes ------------------------------
@@ -200,7 +209,17 @@ function displayWays(data, elevationMap) {
         }
       });
     }
+
+    // wayData provides the details of each way for routing.js to plot the partial routes. 
+    // (possibly a temporary solution)
+    var wayData = {};  
+    data.elements.forEach(el => {
+      wayData[el.id] = el;
+    });
+
     poly.on("click", () => {
+      handleFeatureClick(el, wayData);
+
       // Reset previously highlighted 
       if (currentlyHighlighted && currentlyHighlighted !== poly) {
         currentlyHighlighted.setStyle(currentlyHighlighted._originalStyle);
@@ -215,6 +234,7 @@ function displayWays(data, elevationMap) {
 
       currentlyHighlighted = poly;
     });
+
     poly.on("popupclose", () => {
       if (currentlyHighlighted === poly) {
         poly.setStyle(poly._originalStyle);
@@ -232,3 +252,22 @@ document.getElementById("reloadButton").addEventListener("click", function () {
 
 // Initial load
 loadData();
+
+// // temp
+// map.on("click", function (e) {
+//   const lat = e.latlng.lat.toFixed(6);
+//   const lon = e.latlng.lng.toFixed(6);
+// 
+//   L.popup()
+//     .setLatLng(e.latlng)
+//     .setContent(`<b>Lat:</b> ${lat}<br><b>Lon:</b> ${lon}`)
+//     .openOn(map);
+// 
+//   L.circle([lat, lon], {
+//     radius: 15,
+//     color: "orange",
+//     fill: false
+//   }).addTo(map);
+// 
+//   console.log(`Clicked at: ${lat}, ${lon}`);
+// });

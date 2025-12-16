@@ -1,9 +1,10 @@
-import {PriorityQueue} from "./priorityqueue.js";
 // graph2.js - simplified version to get it working
+import {PriorityQueue} from "./priorityqueue.js";
+import {plateaus} from "./plateaus.js";
 
-// Convert to metres relative to origin
+// Find great-circle distance
 function distanceBetween(alat, alon, blat, blon) {
-  const R = 6371000; // assuming earth is a sphere
+  const R = 6282966; // assuming earth is a sphere (This value is chosen to work in the alps - need a better long term solution)
   const toRad = x => x * Math.PI / 180;
   const Dlat = toRad(blat - alat);
   const Dlon = toRad(blon - alon);
@@ -36,7 +37,7 @@ function addEdge(a, b, w, meta = {}) {
   graph.edges[a].push({ to: b, weight: w, ...meta })
 }
 
-function nearbyVerts(epNode, radius = 20) {
+function nearbyVerts(epNode, radius = 3) {
   let verts = [];
   const parent = graph.verts[epNode];
   for (let vert in graph.verts) {
@@ -131,13 +132,34 @@ export function buildGraph(data, elevationMap) {
     if (!endpoints) return;
 
     endpoints.forEach(epNode => {
-      const nearest = nearbyVerts(epNode, 10);
+      const nearest = nearbyVerts(epNode, 5);
       if (!nearest) return;
       for (let i = 0; i < nearest.length; i++) {
         addEdge(epNode, nearest[i], 0, { kind: "connector" });
         addEdge(nearest[i], epNode, 0, { kind: "connector" });
       }
     });
+  });
+
+  // Connect all points on plateaus
+  plateaus.forEach(plat => {
+    const verts = graph.verts;
+    const br = plat.bottomright;
+    const ul = plat.upperleft;
+    let platVerts = [];
+    for (var v in verts) {
+      const pt = verts[v];
+      if (
+        pt.lat > br[0] && pt.lat < ul[0] &&
+        pt.lon > br[1] && pt.lon < ul[1]
+      ) {platVerts.push(v);}
+    }
+    for (let i = 0; i < platVerts.length - 1; i++) {
+      for (let j = i + 1; j < platVerts.length; j++) {
+        addEdge(platVerts[i], platVerts[j], 0, { kind: "connector" });
+        addEdge(platVerts[j], platVerts[i], 0, { kind: "connector" });
+      }
+    }
   });
 
   console.log(
@@ -153,6 +175,7 @@ export function buildGraph(data, elevationMap) {
 export function route(startVert, endVert) {
   const dist = {};
   const prev = {};
+  const wayIds = {};
 
   for (let id in graph.verts) dist[id] = Infinity;
   dist[startVert] = 0;
@@ -171,6 +194,7 @@ export function route(startVert, endVert) {
       if (alt < dist[e.to]) {
         dist[e.to] = alt;
         prev[e.to] = u;
+        wayIds[e.to] = e.wayId;
         pq.push([alt, e.to]);
       }
     });
@@ -178,11 +202,25 @@ export function route(startVert, endVert) {
 
   if (dist[endVert] === Infinity) {return null;}
 
-  const path = [];
+  let path = [];
   let cur = endVert;
   while (cur !== undefined) {
     path.push(cur);
     cur = prev[cur];
   }
-  return path.reverse();
+
+  path = path.reverse();
+
+  const pathEdges = [];
+  for (let i = 0; i < path.length - 1; i++) {
+    const from = path[i];
+    const to = path[i + 1];
+    const edges = graph.edges[from] || [];
+    const edge = edges.find(e => e.to === to);
+    if (edge) {
+      pathEdges.push({ from, ...edge });
+    }
+  }
+
+  return pathEdges;
 }
