@@ -163,6 +163,12 @@ export const plateaus = [
     bottomright: [45.843988, 6.680433],
     upperleft: [45.844594, 6.681640],
   },
+  {
+    id: "freddy",
+    name: "Freddy",
+    bottomright: [45.848461, 6.662865],
+    upperleft: [45.849223, 6.663986],
+  },
 
 // STILL TO DO: contamines and other side of megeve
 ];

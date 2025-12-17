@@ -1,4 +1,4 @@
-// graph2.js - simplified version to get it working
+// graph.js 
 import {PriorityQueue} from "./priorityqueue.js";
 import {plateaus} from "./plateaus.js";
 
@@ -24,7 +24,20 @@ function polylineLength(coords) {
 }
 
 // --- Graph tools ------------------------------
-
+// The plan is to produce the obvious vertices on the first pass and then try
+// to find the additional ones on a second check. 
+// Things that need to be accounted for: are endpoints which subdivide other
+// pistes, actual crossings of pistes, and plateaus.
+// - [ ] Endpoints subdividing other pistes and crossings of pistes can be solved 
+//   by producing a grid of 5m x 5m overlapping "rectangles" which subdivide 
+//   all nodes in all pistes so that we have the ability to very quickly check
+//   which pistes are close to each other.
+// - [x] Plateaus can be accounted for perhaps by including a 10m radius around 
+//   the tops of all lifts for which any start node can be reached in 0 weight.
+//   This may have exceptions even on this resort though which don't work 
+//   automatically.
+// - [x] Plateaus included also by a separate json which includes the bounding
+//   boxes of each plateau.
 export const graph = {
   verts: {},   // nodeId -> {lat, lon, ele, meta} // verts are indexed by their overpass node ID
   edges: {}    // fromId -> [{toId, weight, kind, wayId}]

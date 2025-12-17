@@ -1,5 +1,5 @@
 import {fetchOverpass, produceElevationMap} from "./loadData.js";
-import {buildGraph} from "./graph2.js";
+import {buildGraph} from "./graph.js";
 import {initRouting, startRouting, clearRoute, handleFeatureClick} from "./routing.js";
 
 // --- Map setup -------------------------------------------------------

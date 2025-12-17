@@ -14,18 +14,27 @@ The elevation data is used to infer piste directions and to display detailed hei
 ---
 
 ## To do
-- *Actually introduce routing* 
-    - Produce a graph representation of the resort bearing in mind that the nodes included in the ski piste ways are not necessarily complete/connected.
-    - Choose an appropriate search algorithm and decide what data should be stored.
-    - Decide what metrics to take into account.
-    - UI and controls. I.e. avoid black runs.
-- *Update how the data is stored/sourced* 
-    - Currently, only the bounding boxes of the resorts are stored locally. This was done so that implementing other resorts shouldn't be too difficult. 
-    - However, the external APIs should most likely not be relied on too heavily. For just a few resorts, it would make sense to store the data in the repo and update on a daily/weekly basis. 
-- *Include more resorts* 
-    - This should most likely be done at least partially on a case-by-case basis as producing an accurate graph for each resort may be difficult to automate.
-- *Optimise for mobile use*
-    - The app will most likely be used on mobile, ways should be larger and have a larger clickable area.
-    - Include a location dot and the ability to centre in on the users location.
+- **Actually introduce routing**
+    - [x] Produce a graph representation of the resort bearing in mind that the nodes included in the ski piste ways are not necessarily complete/connected.
+    - [x] Choose an appropriate search algorithm and decide what data should be stored.
+    - [ ] Decide what metrics to take into account.
+    - [ ] UI and controls. I.e. avoid black runs.
+- **Update how the data is stored/sourced**
+    - [ ] Currently, only the bounding boxes of the resorts are stored locally. This was done so that implementing other resorts shouldn't be too difficult. 
+    - [ ] However, the external APIs should most likely not be relied on too heavily. For just a few resorts, it would make sense to store the data in the repo and update on a daily/weekly basis. 
+    - [ ] Possibly a complex solution where local data is used and external data is a fallback.
+- **Include more resorts** 
+    - [ ] This should most likely be done at least partially on a case-by-case basis as producing an accurate graph for each resort may be difficult to automate.
+- **Optimise for mobile use**
+    - [ ] The app will most likely be used on mobile, ways should be larger and have a larger clickable area.
+    - [ ] Include a location dot and the ability to centre in on the users location.
 
+---
 
+## Short term to do list
+
+- [ ] Piste crossing points dealt with...
+- [ ] A thorough test of as many different routes as possible.
+- [ ] Include more plateaus for Contamines and the other side of Megeve.
+- [ ] Some lifts should be bidirectional!
+- [ ] Route UX should be improved to include features to be avoided.

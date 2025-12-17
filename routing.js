@@ -1,5 +1,5 @@
 // routing.js
-import {route, graph, distanceBetween} from "./graph2.js"; // eventually, graph.js
+import {route, graph, distanceBetween} from "./graph.js";
 
 let state = "idle"; // idle / selectStart / selectEnd / shown
 let startNode = null;
