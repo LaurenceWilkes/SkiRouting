@@ -60,7 +60,7 @@ export function handleFeatureClick(el) {
     startNode = node;
     startMarker = L.circleMarker(
       [graph.verts[node].lat, graph.verts[node].lon],
-      { radius: 6, color: "green", fillOpacity: 1 }
+      { radius: 5, color: "#FFD700", fillOpacity: 1 }
     ).addTo(routeGroup);
 
     state = "selectEnd";
@@ -70,12 +70,13 @@ export function handleFeatureClick(el) {
     endNode = node;
     endMarker = L.circleMarker(
       [graph.verts[node].lat, graph.verts[node].lon],
-      { radius: 6, color: "red", fillOpacity: 1 }
+      { radius: 5, color: "#FFD700", fillOpacity: 1 }
     ).addTo(routeGroup);
 
-    computeRoute();
-    state = "shown";
-    setStatus("Route shown");
+    if (computeRoute()) {
+      state = "shown";
+      setStatus("Route shown");
+    }
   }
 }
 
@@ -92,7 +93,7 @@ function pickNodeFromElement(el) {
       bestVert = v;
     }
   }
-  return bestVert;
+  return bestDist <= 100 ? bestVert : null; // Tolerance of 100 for now...
 }
 
 function buildRouteGeometry(pathEdges) {
@@ -111,7 +112,7 @@ function computeRoute() {
   const pathEdges = route(startNode, endNode);
   if (!pathEdges) {
     setStatus("No route found");
-    return;
+    return false;
   }
 
   const coords = buildRouteGeometry(pathEdges);
@@ -119,8 +120,10 @@ function computeRoute() {
   routeLayer = L.polyline(coords, {
     color: "#FFD700",
     weight: 7,
-    opacity: 0.9
+    opacity: 0.7
   }).addTo(routeGroup);
+
+  return true;
 }
 
 function setStatus(text) {

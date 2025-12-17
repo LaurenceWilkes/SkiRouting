@@ -4,7 +4,7 @@ import {plateaus} from "./plateaus.js";
 
 // Find great-circle distance
 export function distanceBetween(alat, alon, blat, blon) {
-  const R = 6282966; // assuming earth is a sphere (This value is chosen to work in the alps - need a better long term solution)
+  const R = 6373252; // assuming earth is a sphere (This value is chosen to work in the alps - need a better long term solution)
   const toRad = x => x * Math.PI / 180;
   const Dlat = toRad(blat - alat);
   const Dlon = toRad(blon - alon);
@@ -46,7 +46,7 @@ function addEdge(a, b, w, meta = {}) {
   graph.edges[a].push({ to: b, weight: w, ...meta })
 }
 
-function nearbyVerts(epNode, radius = 3) {
+function nearbyVerts(epNode, radius) {
   let verts = [];
   const parent = graph.verts[epNode];
   for (let vert in graph.verts) {
@@ -147,24 +147,24 @@ export function buildGraph(data, elevationMap) {
     }
   });
 
-  // Connect lifts to nearby piste nodes
-  data.elements.forEach(el => {
+  // Connect lifts to nearby piste nodes 
+  data.elements.forEach(el => { 
     if (el.type !== "way" || !el.tags?.aerialway) return;
-
     const id = el.id;
     const endpoints = wayNodes[id];
     if (!endpoints) return;
-
     endpoints.forEach(epNode => {
-      const nearest = nearbyVerts(epNode, 5);
+      const nearest = nearbyVerts(epNode, 30); // all routes starting within approximately 30 meters away are connected
       if (!nearest) return;
-      const idxA = el.nodes.indexOf(epNode);
-      const coordA = el.geometry[idxA];
+      const A = graph.verts[epNode];
+      if (!A) return;
+      const coordA = { lat: A.lat, lon: A.lon };
       for (let i = 0; i < nearest.length; i++) {
-        const idxB = el.nodes.indexOf(nearest[i]);
-        const coordB = el.geometry[idxB];
-        addEdge(epNode, nearest[i], 0, { kind: "connector", geometry: [coordA, coordB] }); 
-        addEdge(nearest[i], epNode, 0, { kind: "connector", geometry: [coordB, coordA] }); 
+        const B = graph.verts[nearest[i]];
+        if (!B) continue;
+        const coordB = { lat: B.lat, lon: B.lon };
+        addEdge(epNode, nearest[i], 0, { kind: "connector", geometry: [coordA, coordB] });
+        addEdge(nearest[i], epNode, 0, { kind: "connector", geometry: [coordB, coordA] });
       }
     });
   });
@@ -177,19 +177,22 @@ export function buildGraph(data, elevationMap) {
     let platVerts = [];
     for (var v in verts) {
       const pt = verts[v];
-      if (
-        pt.lat > br[0] && pt.lat < ul[0] &&
-        pt.lon > br[1] && pt.lon < ul[1]
-      ) {platVerts.push(v);}
+      if ( pt.lat > br[0] && pt.lat < ul[0] && pt.lon > br[1] && pt.lon < ul[1]) {
+        platVerts.push(v);
+      }
     }
     for (let i = 0; i < platVerts.length - 1; i++) {
       const A = graph.verts[platVerts[i]];
+      if (!A) continue;
       const coordA = { lat: A.lat, lon: A.lon };
+
       for (let j = i + 1; j < platVerts.length; j++) {
         const B = graph.verts[platVerts[j]];
+        if (!B) continue;
         const coordB = { lat: B.lat, lon: B.lon };
-        addEdge(platVerts[i], platVerts[j], 0, { kind: "connector", geometry: [coordA, coordB] }); 
-        addEdge(platVerts[j], platVerts[i], 0, { kind: "connector", geometry: [coordB, coordA] }); 
+
+        addEdge(platVerts[i], platVerts[j], 0, { kind: "connector", geometry: [coordA, coordB] });
+        addEdge(platVerts[j], platVerts[i], 0, { kind: "connector", geometry: [coordB, coordA] });
       }
     }
   });
@@ -205,10 +208,10 @@ export function buildGraph(data, elevationMap) {
 // Dijkstra for now, A* with great-circle distance (likely?) not beneficial as
 // the paths are often zig zag shapes.
 export function route(startVert, endVert) {
+  if (!graph.verts[startVert] || !graph.verts[endVert]) {return null;}
+
   const dist = {};
   const prev = {};
-  const wayIds = {};
-
   for (let id in graph.verts) dist[id] = Infinity;
   dist[startVert] = 0;
 
@@ -225,34 +228,21 @@ export function route(startVert, endVert) {
       const alt = d + e.weight;
       if (alt < dist[e.to]) {
         dist[e.to] = alt;
-        prev[e.to] = u;
-        wayIds[e.to] = e.wayId;
+        prev[e.to] = { node: u, edge: e };
         pq.push([alt, e.to]);
       }
     });
   }
 
-  if (dist[endVert] === Infinity) {return null;}
-
-  let path = [];
-  let cur = endVert;
-  while (cur !== undefined) {
-    path.push(cur);
-    cur = prev[cur];
-  }
-
-  path = path.reverse();
+  if (!(endVert in dist) || !Number.isFinite(dist[endVert])) {return null;}
 
   const pathEdges = [];
-  for (let i = 0; i < path.length - 1; i++) {
-    const from = path[i];
-    const to = path[i + 1];
-    const edges = graph.edges[from] || [];
-    const edge = edges.find(e => e.to === to);
-    if (edge) {
-      pathEdges.push({ from, ...edge });
-    }
+
+  let cur = endVert;
+  while (prev[cur]) {
+    pathEdges.push({from: prev[cur].node, ...prev[cur].edge});
+    cur = prev[cur].node;
   }
 
-  return pathEdges;
+  return pathEdges.reverse();
 }
