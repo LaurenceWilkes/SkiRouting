@@ -76,6 +76,9 @@ export function handleFeatureClick(el) {
     if (computeRoute()) {
       state = "shown";
       setStatus("Route shown");
+    } else {
+      clearRoute();
+      setStatus("No route found");
     }
   }
 }
@@ -110,10 +113,7 @@ function buildRouteGeometry(pathEdges) {
 
 function computeRoute() {
   const pathEdges = route(startNode, endNode);
-  if (!pathEdges) {
-    setStatus("No route found");
-    return false;
-  }
+  if (!pathEdges) {return false;} // No route
 
   const coords = buildRouteGeometry(pathEdges);
 
