@@ -2,6 +2,7 @@
 import {PriorityQueue} from "./priorityqueue.js";
 import {plateaus} from "./plateaus.js";
 
+// --- Tools ------------------------------
 // Find great-circle distance
 export function distanceBetween(alat, alon, blat, blon) {
   const R = 6373252; // assuming earth is a sphere (This value is chosen to work in the alps - need a better long term solution)
@@ -23,7 +24,22 @@ function polylineLength(coords) {
   return len;
 }
 
-// --- Graph tools ------------------------------
+function intersect([a, b], [c, d]) {
+  const x1 = a.lat, y1 = a.lon, x2 = b.lat, y2 = b.lon;
+  const x3 = c.lat, y3 = c.lon, x4 = d.lat, y4 = d.lon;
+  const den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+
+  if (Math.abs(den) < 1e-12) return null;
+
+  const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
+  const u = ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / den;
+
+  return t >= 0 && t <= 1 && u >= 0 && u <= 1
+    ? { lat: x1 + t * (x2 - x1), lon: y1 + t * (y2 - y1) }
+    : null;
+}
+
+// --- Graph ------------------------------
 // The plan is to produce the obvious vertices on the first pass and then try
 // to find the additional ones on a second check. 
 // Things that need to be accounted for: are endpoints which subdivide other
@@ -171,13 +187,11 @@ export function buildGraph(data, elevationMap) {
       if (!nearest) return;
       const A = graph.verts[epNode];
       if (!A) return;
-      const coordA = { lat: A.lat, lon: A.lon };
       for (let i = 0; i < nearest.length; i++) {
         const B = graph.verts[nearest[i]];
         if (!B) continue;
-        const coordB = { lat: B.lat, lon: B.lon };
-        addEdge(epNode, nearest[i], 0, { kind: "connector", geometry: [coordA, coordB] });
-        addEdge(nearest[i], epNode, 0, { kind: "connector", geometry: [coordB, coordA] });
+        addEdge(epNode, nearest[i], 0, { kind: "connector", geometry: [A, B] });
+        addEdge(nearest[i], epNode, 0, { kind: "connector", geometry: [B, A] });
       }
     });
   });
@@ -197,15 +211,13 @@ export function buildGraph(data, elevationMap) {
     for (let i = 0; i < platVerts.length - 1; i++) {
       const A = graph.verts[platVerts[i]];
       if (!A) continue;
-      const coordA = { lat: A.lat, lon: A.lon };
 
       for (let j = i + 1; j < platVerts.length; j++) {
         const B = graph.verts[platVerts[j]];
         if (!B) continue;
-        const coordB = { lat: B.lat, lon: B.lon };
 
-        addEdge(platVerts[i], platVerts[j], 0, { kind: "connector", geometry: [coordA, coordB] });
-        addEdge(platVerts[j], platVerts[i], 0, { kind: "connector", geometry: [coordB, coordA] });
+        addEdge(platVerts[i], platVerts[j], 0, { kind: "connector", geometry: [A, B] });
+        addEdge(platVerts[j], platVerts[i], 0, { kind: "connector", geometry: [B, A] });
       }
     }
   });
