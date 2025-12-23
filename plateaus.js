@@ -175,6 +175,56 @@ export const plateaus = [
     bottomright: [45.809875, 6.627159],
     upperleft: [45.810809, 6.628543],
   },
-
-// STILL TO DO: contamines and other side of megeve
+  // Contamines
+  {
+    id: "montjoiechair_bottom",
+    bottomright: [45.802007, 6.710742],
+    upperleft: [45.802635, 6.712132],
+  },
+  {
+    id: "etape",
+    bottomright: [45.802702, 6.712982],
+    upperleft: [45.803243, 6.713963],
+  },
+  {
+    id: "montjoiechair",
+    bottomright: [45.791385, 6.698935],
+    upperleft: [45.792013, 6.699750],
+  },
+  {
+    id: "signal",
+    bottomright: [45.786526, 6.693501],
+    upperleft: [45.787435, 6.695040],
+  },
+  {
+    id: "labuichecroisee_bottom",
+    bottomright: [45.782792, 6.700802],
+    upperleft: [45.783608, 6.701569],
+  },
+  {
+    id: "labuichecroisee",
+    bottomright: [45.773241, 6.683185],
+    upperleft: [45.775366, 6.685170],
+  },
+  {
+    id: "roselette",
+    bottomright: [45.776305, 6.682745],
+    upperleft: [45.776956, 6.683271],
+  },
+  {
+    id: "choton_bottom",
+    bottomright: [45.779010, 6.655636],
+    upperleft: [45.779205, 6.655883],
+  },
+  {
+    id: "monument_bottom",
+    bottomright: [45.789279, 6.669656],
+    upperleft: [45.789855, 6.671045],
+  },
+  {
+    id: "tierces_bottom",
+    bottomright: [45.792488, 6.687267],
+    upperleft: [45.793191, 6.688464],
+  },
+// STILL TO DO: rest of contamines and other side of megeve
 ];
