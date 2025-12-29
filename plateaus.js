@@ -1,5 +1,4 @@
 // plateaus.js
-
 export const plateaus = [
   {
     id: "princesse",
@@ -174,6 +173,11 @@ export const plateaus = [
     name: "Lanchettes",
     bottomright: [45.809875, 6.627159],
     upperleft: [45.810809, 6.628543],
+  },
+  {
+    id: "cote_bottom",
+    bottomright: [45.811699, 6.644679],
+    upperleft: [45.812271, 6.645977],
   },
   // Contamines
   {
