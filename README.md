@@ -38,3 +38,11 @@ The elevation data is used to infer piste directions and to display detailed hei
 - [ ] Include more plateaus for Contamines and the other side of Megeve.
 - [ ] Some lifts should be bidirectional!
 - [ ] Route UX should be improved to include features to be avoided.
+
+## Issues 
+
+- Certain computed routes prefer/can't find a route which clearly should be shorter/exist 
+    - Perhaps a flaw with how the route is calculated.
+- Overpass times out (also open-elevation) 
+    - the clear solution is to store the data (even just as a failsafe) and update it periodically 
+    - Alternatively, queries should be made multiple times till it works but this doesn't sound like a good idea...
