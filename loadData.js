@@ -31,8 +31,6 @@ export async function fetchOverpass() {
 async function fetchElevations(coords) {
   const ELEVATION_URL = "https://api.open-elevation.com/api/v1/lookup";
   
-  // coords = [ [lat, lon], [lat, lon], ... ]
-
   const body = {
     locations: coords.map(c => ({
       latitude: c[0],
