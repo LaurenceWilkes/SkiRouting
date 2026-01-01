@@ -37,6 +37,11 @@ export const plateaus = [
     upperleft: [45.874948, 6.685996],
   },
   {
+    id: "grandvorasset_bottom",
+    bottomright: [45.858037, 6.643574],
+    upperleft: [45.859281, 6.644754],
+  },
+  {
     id: "pierre_bottom",
     name: "Lower pierre",
     bottomright: [45.877394, 6.684784],
