@@ -11,7 +11,7 @@ var map = L.map("map").setView(mapCenter, 12);
 
 // Base map 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 22, // formerly 18
+  maxZoom: 18,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | <a href="https://open-elevation.com/">Open-Elevation</a>',
 }).addTo(map);
 
@@ -26,13 +26,7 @@ initRouting(map, routeLayer);
 // Currently highlighted
 let currentlyHighlighted = null;
 
-// Options for mobile
-const isMobile = window.matchMedia("(max-width: 600px)").matches;
-//const baseWeight = isMobile ? 6 : 3; // Not included yet because lines look bad and doesn't change on resize
-const baseWeight = 3;
-
 // Legend
-//var legend = L.control({ position: isMobile ? "topright" : "bottomright" }); // not included for same reason as last comment
 var legend = L.control({ position: "bottomright" });
 legend.onAdd = function () {
   var div = L.DomUtil.create("div", "legend");
@@ -135,7 +129,7 @@ function displayWays(data, elevationMap) {
       var name = tags.name || "(unnamed lift)";
       var liftType = tags.aerialway;
 
-      var liftStyle = { color: "#555555", weight: baseWeight, dashArray: "5, 5" };
+      var liftStyle = { color: "#555555", weight: 3, dashArray: "5, 5" };
 
       var poly = L.polyline(coords, liftStyle).addTo(liftLayer);
       poly._originalStyle = liftStyle;
@@ -171,7 +165,7 @@ function displayWays(data, elevationMap) {
       var name = tags.name || "(unnamed piste)";
       var colour = colourForDifficulty(diff);
 
-      var pisteStyle = { color: colour, weight: baseWeight };
+      var pisteStyle = { color: colour, weight: 3 };
       var poly = L.polyline(coords, pisteStyle).addTo(pisteLayer);
       poly._originalStyle = pisteStyle;
 
@@ -196,7 +190,7 @@ function displayWays(data, elevationMap) {
             offset: '50%',
             repeat: 0,
             symbol: L.Symbol.arrowHead({
-              pixelSize: 11, 
+              pixelSize: 10,
               pathOptions: { color: colour, weight: 1, fillOpacity: 1 }
             })
           }
@@ -226,7 +220,7 @@ function displayWays(data, elevationMap) {
       // Highlight
       poly.setStyle({
         color: colour,      
-        weight: baseWeight + 3,        
+        weight: 6,        
         opacity: 1
       });
 
@@ -255,19 +249,19 @@ loadData();
 map.on("click", function (e) {
   handleFeatureClick(e);
 
-  const lat = e.latlng.lat.toFixed(6);
-  const lon = e.latlng.lng.toFixed(6);
-
-  L.popup()
-    .setLatLng(e.latlng)
-    .setContent(`<b>Lat:</b> ${lat}<br><b>Lon:</b> ${lon}`)
-    .openOn(map);
-
+//  const lat = e.latlng.lat.toFixed(6);
+//  const lon = e.latlng.lng.toFixed(6);
+//
+//  L.popup()
+//    .setLatLng(e.latlng)
+//    .setContent(`<b>Lat:</b> ${lat}<br><b>Lon:</b> ${lon}`)
+//    .openOn(map);
+//
 //  L.circle([lat, lon], {
 //    radius: 15,
 //    color: "orange",
 //    fill: false
 //  }).addTo(map);
-
-  console.log(`Clicked at: ${lat}, ${lon}`);
+//
+//  console.log(`Clicked at: ${lat}, ${lon}`);
 });
