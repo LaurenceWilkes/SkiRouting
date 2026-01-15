@@ -24,7 +24,7 @@ export function initRouting(map, layerGroup) {
 export function startRouting() {
   clearRoute();
   state = "selectStart";
-  setStatus("Click a start point");
+  setStatus("Click near an intersection point");
 }
 
 export function clearRoute() {
