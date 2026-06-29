@@ -2,6 +2,13 @@
 import {PriorityQueue} from "./priorityqueue.js";
 import {plateaus} from "./plateaus.js";
 
+// Surface/button lifts only run one way; everything else (chairs, gondolas,
+// cable cars, etc.) can be ridden in both directions.
+const ONE_WAY_LIFTS = new Set([
+  "platter", "drag_lift", "t-bar", "j-bar", "rope_tow",
+  "magic_carpet", "button_lift", "tow",
+]);
+
 // --- Tools ------------------------------
 // Find great-circle distance
 export function distanceBetween(alat, alon, blat, blon) {
@@ -24,6 +31,7 @@ function polylineLength(coords) {
   return len;
 }
 
+// Unused intersect function
 function intersect([a, b], [c, d]) {
   const x1 = a.lat, y1 = a.lon, x2 = b.lat, y2 = b.lon;
   const x3 = c.lat, y3 = c.lon, x4 = d.lat, y4 = d.lon;
@@ -148,6 +156,8 @@ export function buildGraph(data, elevationMap) {
 
     const verts = wayNodes[id];
 
+    const bidirectional = tags.aerialway && !ONE_WAY_LIFTS.has(tags.aerialway);
+
     for (let i = 0; i < verts.length - 1; i++) {
       const A = graph.verts[verts[i]];
       const B = graph.verts[verts[i + 1]];
@@ -167,12 +177,17 @@ export function buildGraph(data, elevationMap) {
 
       const w = polylineLength(segGeom);
 
-      addEdge(from, to, w, {
+      const meta = {
         wayId: id,
         kind: tags.aerialway ? "lift" : "piste",
         difficulty: tags["piste:difficulty"] || null,
         geometry: segGeom
-      });
+      };
+
+      addEdge(from, to, w, meta);
+      if (bidirectional) {
+        addEdge(to, from, w, { ...meta, geometry: segGeom.slice().reverse() });
+      }
     }
   });
 
@@ -246,12 +261,12 @@ export function route(startVert, endVert) {
   while (!pq.isEmpty()) {
     const [d, u] = pq.pop();
 
-    if (d > dist[u]) continue;
+    if (d > (dist[u] ?? Infinity)) continue;
     if (u === endVert) break;
 
     (graph.edges[u] || []).forEach(e => {
       const alt = d + e.weight;
-      if (alt < dist[e.to]) {
+      if (alt < (dist[e.to] ?? Infinity)) {
         dist[e.to] = alt;
         prev[e.to] = { node: u, edge: e };
         pq.push([alt, e.to]);
@@ -259,7 +274,7 @@ export function route(startVert, endVert) {
     });
   }
 
-  if (!(endVert in dist) || !Number.isFinite(dist[endVert])) {return null;}
+  if (!Number.isFinite(dist[endVert] ?? Infinity)) {return null;}
 
   const pathEdges = [];
 
